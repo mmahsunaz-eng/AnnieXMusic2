@@ -282,9 +282,11 @@ async def auto_clean_reports(client):
 
 
 # === START BACKGROUND TASK (INI NO 3) ===
-@app.on_startup()
-async def start_report_cleanup(client):
-    asyncio.create_task(auto_clean_reports(client))
+async def _start_cleanup():
+    await app.start()
+    asyncio.create_task(auto_clean_reports(app))
+
+asyncio.get_event_loop().create_task(_start_cleanup())
 
 __MODULE__ = "Admin"
 __HELP__ = """
