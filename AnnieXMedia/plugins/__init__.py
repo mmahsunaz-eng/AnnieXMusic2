@@ -1,7 +1,6 @@
 ﻿# Authored By Certified Coders © 2025
 import glob
 from os.path import dirname, isfile
-from .Report import *
 
 def __list_all_modules():
     work_dir = dirname(__file__)
