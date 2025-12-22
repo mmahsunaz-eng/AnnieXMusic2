@@ -5,7 +5,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from AnnieXMedia.core.bot import app
+from AnnieXMedia import app
 
 # === KONFIGURASI ===
 LOGGER_ID = int(os.environ.get("LOGGER_ID", "-4812620726"))
