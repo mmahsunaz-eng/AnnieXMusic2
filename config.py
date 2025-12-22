@@ -33,6 +33,7 @@ PLAYLIST_FETCH_LIMIT = int(getenv("PLAYLIST_FETCH_LIMIT", "30"))
 COOKIE_URL = getenv("COOKIE_URL")  # required (paste link)
 API_URL = getenv("API_URL")        # optional
 API_KEY = getenv("API_KEY")        # optional
+VIDEO_API_URL = getenv("VIDEO_API_URL") or API_URL
 DEEP_API = getenv("DEEP_API")      # optional
 
 # ── Hosting / deployment ───────────────────────────────────────────────────────
