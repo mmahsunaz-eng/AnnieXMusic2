@@ -52,16 +52,32 @@ def circle(im, size=(835, 839)):
 
 def build_pic(av, fn, uid, un):
     os.makedirs("downloads", exist_ok=True)
+
     bg = cached_bg().copy()
-    avatar = circle(Image.open(av))
-    bg.paste(avatar, (1887, 390), avatar)
+
+    # ===== AVATAR =====
+    avatar = circle(Image.open(av), size=(360, 360))
+    bg.paste(avatar, (1010, 280), avatar)
+
     d = ImageDraw.Draw(bg)
-    f = cached_font()
-    d.text((421, 715), fn, fill=(242, 242, 242), font=f)
-    d.text((270, 1005), str(uid), fill=(242, 242, 242), font=f)
-    d.text((570, 1308), un, fill=(242, 242, 242), font=f)
+
+    # ===== FONT =====
+    f_name = cached_font(48)
+    f_small = cached_font(44)
+
+    # ===== SAFE TEXT =====
+    name_text = fn[:22]
+    id_text = str(uid)
+    user_text = f"@{un}" if un != "No Username" else "No Username"
+
+    # ===== TEXT POSITIONS (1536x1024) =====
+    d.text((240, 420), name_text, fill=(255, 220, 255), font=f_name)
+    d.text((240, 540), id_text, fill=(235, 200, 255), font=f_small)
+    d.text((240, 660), user_text, fill=(235, 200, 255), font=f_small)
+
     path = f"downloads/welcome_{uid}.png"
     bg.save(path)
+
     return path
 
 async def safe_send(func, *args, **kwargs):
