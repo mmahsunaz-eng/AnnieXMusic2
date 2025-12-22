@@ -1,4 +1,3 @@
-﻿# Authored By Certified Coders © 2025
 import re
 from os import getenv
 from dotenv import load_dotenv
@@ -33,7 +32,6 @@ PLAYLIST_FETCH_LIMIT = int(getenv("PLAYLIST_FETCH_LIMIT", "30"))
 # ── External APIs ──────────────────────────────────────────────────────────────
 COOKIE_URL = getenv("COOKIE_URL")  # required (paste link)
 API_URL = getenv("API_URL")        # optional
-VIDEO_API_URL = getenv("VIDEO_API_URL")  # optional
 API_KEY = getenv("API_KEY")        # optional
 DEEP_API = getenv("DEEP_API")      # optional
 
@@ -42,13 +40,13 @@ HEROKU_APP_NAME = getenv("HEROKU_APP_NAME")
 HEROKU_API_KEY = getenv("HEROKU_API_KEY")
 
 # ── Git / updates ──────────────────────────────────────────────────────────────
-UPSTREAM_REPO = getenv("UPSTREAM_REPO", "https://github.com/CertifiedCoders/AnnieXMusic")
+UPSTREAM_REPO = getenv("UPSTREAM_REPO", "https://github.com/CertifiedDevloper/AnnieXMusic")
 UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "Master")
 GIT_TOKEN = getenv("GIT_TOKEN")  # needed if repo is private
 
 # ── Support links ──────────────────────────────────────────────────────────────
-SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/CertifiedNetwork")
-SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/CertifiedDiscussion")
+SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/onlyforachabot")
+SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/onlyforachabotsupport")
 
 # ── Assistant auto-leave ───────────────────────────────────────────────────────
 AUTO_LEAVING_ASSISTANT = False
@@ -78,9 +76,9 @@ STICKERS = [
     "CAACAgUAAx0Cd6nKUAACASBl_rnalOle6g7qS-ry-aZ1ZpVEnwACgg8AAizLEFfI5wfykoCR4h4E",
     "CAACAgUAAx0Cd6nKUAACATJl_rsEJOsaaPSYGhU7bo7iEwL8AAPMDgACu2PYV8Vb8aT4_HUPHgQ",
 ]
-HELP_IMG_URL = "https://files.catbox.moe/yg2vky.jpg"
+HELP_IMG_URL = "https://files.catbox.moe/2tn4tx.png"
 PING_VID_URL = "https://files.catbox.moe/3ivvgo.mp4"
-PLAYLIST_IMG_URL = "https://files.catbox.moe/yhaja5.jpg"
+PLAYLIST_IMG_URL = "https://files.catbox.moe/taiwd0.png"
 STATS_VID_URL = "https://telegra.ph/file/e2ab6106ace2e95862372.mp4"
 TELEGRAM_AUDIO_URL = "https://files.catbox.moe/mlztag.jpg"
 TELEGRAM_VIDEO_URL = "https://files.catbox.moe/tiss2b.jpg"
@@ -104,7 +102,7 @@ AYUV = [
 
 # ── Runtime structures ─────────────────────────────────────────────────────────
 BANNED_USERS = filters.user()
-adminlist, lyrical, autoclean, confirmer = {}, {}, [], {}
+adminlist, lyrical, votemode, autoclean, confirmer = {}, {}, {}, [], {}
 
 # ── Minimal validation ─────────────────────────────────────────────────────────
 if SUPPORT_CHANNEL and not re.match(r"^https?://", SUPPORT_CHANNEL):
@@ -112,3 +110,10 @@ if SUPPORT_CHANNEL and not re.match(r"^https?://", SUPPORT_CHANNEL):
 
 if SUPPORT_CHAT and not re.match(r"^https?://", SUPPORT_CHAT):
     raise SystemExit("[ERROR] - Invalid SUPPORT_CHAT URL. Must start with https://")
+
+if not COOKIE_URL:
+    raise SystemExit("[ERROR] - COOKIE_URL is required.")
+
+# Only allow these cookie link formats
+if not re.match(r"^https://(batbin\.me|pastebin\.com)/[A-Za-z0-9]+$", COOKIE_URL):
+    raise SystemExit("[ERROR] - Invalid COOKIE_URL. Use https://batbin.me/<id> or https://pastebin.com/<id>")
