@@ -1,10 +1,10 @@
-﻿# Authored By Certified Coders © 2025
+# Authored By Certified Coders © 2025
 import re
 from typing import List, Union, Optional
 
 import aiohttp
 from bs4 import BeautifulSoup
-from youtubesearchpython import VideosSearch
+from youtubesearchpython.__aio__ import VideosSearch
 
 
 class AppleAPI:
