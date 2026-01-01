@@ -211,8 +211,8 @@ async def autoban_handler(client, message):
         return
 
     if BAD_REGEX.search(text) or is_banned_word(text):
-    await message.delete()
-    await client.ban_chat_member(message.chat.id, message.from_user.id)
+        await message.delete()
+        await client.ban_chat_member(message.chat.id, message.from_user.id)
 
     now = datetime.now()
     time_str = now.strftime("%H:%M:%S")
