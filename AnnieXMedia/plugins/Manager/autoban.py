@@ -219,48 +219,6 @@ async def autoban_handler(client, message):
     date_str = now.strftime("%d %B %Y")
 
     notif = await message.reply(
-        f"📢 **Broadcast dimulai**\n\n"
-        f"👤 Oleh: Ｏɴʟʏғᴏʀᴀᴄʜᴀ 𓆩✘𓆪 ᴀssɪsᴛᴀɴᴛ\n"
-        f"🕒 Waktu: {time_str}\n"
-        f"💬 Grup: {message.chat.title}\n\n"
-        f"**Pesan:**\n"
-        f"🚨⚠️ **P E N G U M U M A N** ⚠️🚨\n\n"
-        f"📢 **PEMBERITAHUAN KEPADA MEMBER GRUP**\n\n"
-        f"📅 {date_str}\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"👤 User  : {message.from_user.mention}\n"
-        f"💬 Pesan : `{message.text}`\n\n"
-        f"⛔ **TINDAKAN OTOMATIS**\n"
-        f"• Pesan dihapus\n"
-        f"• User di-ban permanen\n\n"
-        f"📛 **Alasan:**\n"
-        f"Melanggar peraturan grup (Kalimat Terlarang)\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"💠 **Diterbitkan oleh:**\n"
-        f"ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 」\n\n"
-        f"💎 Harap patuhi peraturan grup demi kenyamanan bersama"
-    )
-
-    await client.send_message(
-        LOG_CHANNEL,
-        f"🚨 **AUTO BAN LOG**\n"
-        f"👤 {message.from_user.mention}\n"
-        f"🆔 `{message.from_user.id}`\n"
-        f"💬 {message.chat.title}\n"
-        f"💬 Pesan: {message.text}\n"
-        f"🕒 {time_str}"
-    )
-
-    await asyncio.sleep(10)
-    await notif.delete() if BAD_REGEX.search(text) or is_banned_word(text):
-    await message.delete()
-    await client.ban_chat_member(message.chat.id, message.from_user.id)
-
-    now = datetime.now()
-    time_str = now.strftime("%H:%M:%S")
-    date_str = now.strftime("%d %B %Y")
-
-    notif = await message.reply(
     f"🚫⚠️ ** ᴀᴜᴛᴏ ʙᴀɴ ᴀᴄᴛɪᴠᴀᴛᴇ ** ⚠️🚫\n\n"
     f"👤 Bot   : Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ\n"
     f"🕒 Waktu : {time_str}\n"
