@@ -250,5 +250,4 @@ async def autoban_handler(client, message):
     await asyncio.sleep(10)
     await notif.delete()
 
-print autoban load successfull
         
