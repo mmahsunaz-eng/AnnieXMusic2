@@ -6,7 +6,7 @@ from datetime import datetime
 # =====================
 # CONFIG
 # =====================
-LOG_CHANNEL = -1001234567890  # GANTI ID CHANNEL LOG
+LOG_CHANNEL = -1002620223816  # GANTI ID CHANNEL LOG
 
 # =====================
 # DATABASE SQLITE
