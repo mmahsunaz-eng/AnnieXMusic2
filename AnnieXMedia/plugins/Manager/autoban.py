@@ -277,7 +277,6 @@ async def autoban_handler(client, message):
     f"💠 **Moderasi otomatis oleh**\n"
     f"ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 」"
     )
-    )
 
     await client.send_message(
         LOG_CHANNEL,
