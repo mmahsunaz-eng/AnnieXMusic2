@@ -74,10 +74,14 @@ async def autoban_handler(client, message):
                     f"ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 」"
                 )
 
-                notice = await client.send_message(message.chat.id,log_text)
-                 # auto delete 5 detik
-                 await asyncio.sleep(5)
-                 await notice.delete()
+                notice = await client.send_message(
+    message.chat.id,
+    log_text
+)
+
+# auto delete 5 detik
+await asyncio.sleep(5)
+await notice.delete()
 
                 if LOG_CHAT:
                     await client.send_message(LOG_CHAT, log_text)
