@@ -159,9 +159,10 @@ async def whitelist_cmd(app, message: Message, _):
 # AUTO BAN HANDLER (FINAL)
 # =====================
 @app.on_message(
-    filters.group & filters.text & ~filters.command,
+    filters.group & filters.text & ~filters.command([]),
     group=100
 )
+async def autoban_handler(app, message: Message):
 async def autoban_handler(app, message: Message):
     if not message.from_user:
         return
