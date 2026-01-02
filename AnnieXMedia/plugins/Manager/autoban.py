@@ -25,23 +25,29 @@ BAD_REGEX = re.compile(
 )
 
 # =====================
-# HELPER FUNCTIONS
+# HELPER (ASYNC – WAJIB)
 # =====================
-def autoban_active(chat_id):
-    data = db.autoban.find_one({"chat_id": chat_id})
+async def autoban_active(chat_id: int) -> bool:
+    data = await db.autoban.find_one({"chat_id": chat_id})
     return bool(data and data.get("status") == 1)
 
 
-def is_whitelist_user(uid):
-    return db.whitelist_users.find_one({"user_id": uid}) is not None
+async def is_whitelist_user(user_id: int) -> bool:
+    return await db.whitelist_users.find_one({"user_id": user_id}) is not None
 
 
-def is_whitelist_word(text):
-    return any(w["word"] in text for w in db.whitelist_words.find())
+async def is_whitelist_word(text: str) -> bool:
+    async for w in db.whitelist_words.find():
+        if w["word"] in text:
+            return True
+    return False
 
 
-def is_banned_word(text):
-    return any(w["word"] in text for w in db.banned_words.find())
+async def is_banned_word(text: str) -> bool:
+    async for w in db.banned_words.find():
+        if w["word"] in text:
+            return True
+    return False
 
 
 # =====================
@@ -49,17 +55,17 @@ def is_banned_word(text):
 # =====================
 @app.on_message(filters.command("autoban") & filters.group)
 @AdminRightsCheck
-async def autoban_cmd(client, message: Message, _):
+async def autoban_cmd(app, message: Message, _):
     chat_id = message.chat.id
 
     if len(message.command) < 2:
-        return await message.reply("`/autoban on | off | status`")
+        return await message.reply_text("`/autoban on | off | status`")
 
     sub = message.command[1].lower()
 
     if sub in ("on", "off"):
         status = 1 if sub == "on" else 0
-        db.autoban.update_one(
+        await db.autoban.update_one(
             {"chat_id": chat_id},
             {"$set": {"status": status}},
             upsert=True,
@@ -75,14 +81,14 @@ async def autoban_cmd(client, message: Message, _):
         )
 
     if sub == "status":
-        wl_u = db.whitelist_users.count_documents({})
-        wl_w = db.whitelist_words.count_documents({})
-        bw = db.banned_words.count_documents({})
+        wl_u = await db.whitelist_users.count_documents({})
+        wl_w = await db.whitelist_words.count_documents({})
+        bw = await db.banned_words.count_documents({})
 
         return await message.reply_text(
             f"📢 **AUTO BAN STATUS**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"⚙️ Sistem : {'🟢 ONLINE' if autoban_active(chat_id) else '🔴 OFFLINE'}\n"
+            f"⚙️ Sistem : {'🟢 ONLINE' if await autoban_active(chat_id) else '🔴 OFFLINE'}\n"
             f"👤 Whitelist User : {wl_u}\n"
             f"💬 Whitelist Kata : {wl_w}\n"
             f"🛑 Kata Terlarang : {bw}\n"
@@ -95,9 +101,9 @@ async def autoban_cmd(client, message: Message, _):
 # =====================
 @app.on_message(filters.command("wl") & filters.group)
 @AdminRightsCheck
-async def whitelist_cmd(client, message: Message, _):
+async def whitelist_cmd(app, message: Message, _):
     if len(message.command) < 2:
-        return await message.reply(
+        return await message.reply_text(
             "`/wl user|deluser (reply)`\n"
             "`/wl word|delword <kata>`\n"
             "`/wl list`"
@@ -107,75 +113,56 @@ async def whitelist_cmd(client, message: Message, _):
 
     if sub == "user" and message.reply_to_message:
         uid = message.reply_to_message.from_user.id
-        db.whitelist_users.update_one(
+        await db.whitelist_users.update_one(
             {"user_id": uid},
             {"$set": {"user_id": uid}},
             upsert=True,
         )
-        return await message.reply("✅ User di-whitelist.")
+        return await message.reply_text("✅ User di-whitelist.")
 
     if sub == "deluser" and message.reply_to_message:
         uid = message.reply_to_message.from_user.id
-        db.whitelist_users.delete_one({"user_id": uid})
-        return await message.reply("❌ User dihapus.")
+        await db.whitelist_users.delete_one({"user_id": uid})
+        return await message.reply_text("❌ User dihapus.")
 
     if sub == "word" and len(message.command) > 2:
         word = " ".join(message.command[2:]).lower()
-        db.whitelist_words.update_one(
+        await db.whitelist_words.update_one(
             {"word": word},
             {"$set": {"word": word}},
             upsert=True,
         )
-        return await message.reply("✅ Kata di-whitelist.")
+        return await message.reply_text("✅ Kata di-whitelist.")
 
     if sub == "delword" and len(message.command) > 2:
         word = " ".join(message.command[2:]).lower()
-        db.whitelist_words.delete_one({"word": word})
-        return await message.reply("❌ Kata dihapus.")
+        await db.whitelist_words.delete_one({"word": word})
+        return await message.reply_text("❌ Kata dihapus.")
 
     if sub == "list":
-        users = "\n".join(str(x["user_id"]) for x in db.whitelist_users.find()) or "Kosong"
-        words = "\n".join(x["word"] for x in db.whitelist_words.find()) or "Kosong"
+        users = []
+        async for x in db.whitelist_users.find():
+            users.append(str(x["user_id"]))
+
+        words = []
+        async for x in db.whitelist_words.find():
+            words.append(x["word"])
+
         return await message.reply_text(
-            f"📂 **WHITELIST**\n\n👤 User:\n{users}\n\n💬 Kata:\n{words}"
+            f"📂 **WHITELIST**\n\n"
+            f"👤 User:\n{chr(10).join(users) if users else 'Kosong'}\n\n"
+            f"💬 Kata:\n{chr(10).join(words) if words else 'Kosong'}"
         )
 
 
 # =====================
-# /badword COMMAND
+# AUTO BAN HANDLER (FINAL)
 # =====================
-@app.on_message(filters.command("badword") & filters.group)
-@AdminRightsCheck
-async def badword_cmd(client, message: Message, _):
-    if len(message.command) < 2:
-        return await message.reply("`/badword add|del <kata>`\n`/badword list`")
-
-    sub = message.command[1].lower()
-
-    if sub == "add" and len(message.command) > 2:
-        word = " ".join(message.command[2:]).lower()
-        db.banned_words.update_one(
-            {"word": word},
-            {"$set": {"word": word}},
-            upsert=True,
-        )
-        return await message.reply("✅ Kata terlarang ditambahkan.")
-
-    if sub == "del" and len(message.command) > 2:
-        word = " ".join(message.command[2:]).lower()
-        db.banned_words.delete_one({"word": word})
-        return await message.reply("❌ Kata terlarang dihapus.")
-
-    if sub == "list":
-        words = "\n".join(x["word"] for x in db.banned_words.find()) or "Kosong"
-        return await message.reply_text(f"🛑 **KATA TERLARANG**\n{words}")
-
-
-# =====================
-# AUTO BAN HANDLER
-# =====================
-@app.on_message(filters.group & filters.text, group=2)
-async def autoban_handler(client, message: Message):
+@app.on_message(
+    filters.group & filters.text & ~filters.command,
+    group=100
+)
+async def autoban_handler(app, message: Message):
     if not message.from_user:
         return
 
@@ -183,28 +170,44 @@ async def autoban_handler(client, message: Message):
     user_id = message.from_user.id
     text = message.text.lower()
 
-    if not autoban_active(chat_id):
-        return
-    if is_whitelist_user(user_id):
-        return
-    if is_whitelist_word(text):
+    if not await autoban_active(chat_id):
         return
 
-    if BAD_REGEX.search(text) or is_banned_word(text):
+    member = await app.get_chat_member(chat_id, user_id)
+    if member.status in ("administrator", "creator"):
+        return
+
+    if await is_whitelist_user(user_id):
+        return
+
+    if await is_whitelist_word(text):
+        return
+
+    if BAD_REGEX.search(text) or await is_banned_word(text):
         await message.delete()
-        await client.ban_chat_member(chat_id, user_id)
+        await app.ban_chat_member(chat_id, user_id)
 
         time_str = datetime.now().strftime("%H:%M:%S")
 
-        notif = await message.reply(
-            f"🚫⚠️ **ᴀᴜᴛᴏ ʙᴀɴ ᴀᴄᴛɪᴠᴀᴛᴇ** ⚠️🚫\n\n"
+        notif = await message.reply_text(
+            f"🚫⚠️ ** ᴀᴜᴛᴏ ʙᴀɴ ᴀᴄᴛɪᴠᴀᴛᴇ ** ⚠️🚫\n\n"
+            f"👤 Bot   : Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ\n"
+            f"🕒 Waktu : {time_str}\n"
+            f"💬 Grup  : {message.chat.title}\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n"
             f"👤 User  : {message.from_user.mention}\n"
-            f"💬 Pesan : `{message.text}`\n"
-            f"🕒 Waktu : {time_str}\n\n"
-            f"⛔ Pesan dihapus & user di-ban otomatis"
+            f"💬 Pesan : `{message.text}`\n\n"
+            f"⛔ **TINDAKAN**\n"
+            f"• Pesan dihapus ✅\n"
+            f"• User di-ban otomatis ✅\n\n"
+            f"📛 **Alasan:**\n"
+            f"Melanggar peraturan grup (Kalimat Terlarang)\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"💠 **Moderasi otomatis oleh**\n"
+            f"ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 」"
         )
 
-        await client.send_message(
+        await app.send_message(
             LOG_CHANNEL,
             f"🚨 **AUTO BAN LOG**\n"
             f"👤 {message.from_user.mention}\n"
