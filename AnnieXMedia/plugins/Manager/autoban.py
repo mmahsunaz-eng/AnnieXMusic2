@@ -7,7 +7,7 @@ from datetime import datetime
 from pyrogram import filters
 from pyrogram.types import Message
 
-from AnnieXMedia.core.bot import Client
+from AnnieXMedia import app
 from AnnieXMedia.core.mongo import mongodb as db
 from AnnieXMedia.utils.decorators import AdminRightsCheck
 
@@ -47,7 +47,7 @@ def is_banned_word(text):
 # =====================
 # /autoban COMMAND
 # =====================
-@Client.on_message(filters.command("autoban") & filters.group)
+@app.on_message(filters.command("autoban") & filters.group)
 @AdminRightsCheck
 async def autoban_cmd(client, message: Message, _):
     chat_id = message.chat.id
@@ -80,17 +80,12 @@ async def autoban_cmd(client, message: Message, _):
         bw = db.banned_words.count_documents({})
 
         return await message.reply_text(
-            f"📢 **P E M B E R I T A H U A N**\n"
+            f"📢 **AUTO BAN STATUS**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🚨 **AUTO BAN STATUS BOT** 🚨\n\n"
-            f"⚙️ Status Sistem : {'🟢 ONLINE' if autoban_active(chat_id) else '🔴 OFFLINE'}\n"
-            f"🛡️ Mode Proteksi : Regex + Custom Word\n"
+            f"⚙️ Sistem : {'🟢 ONLINE' if autoban_active(chat_id) else '🔴 OFFLINE'}\n"
             f"👤 Whitelist User : {wl_u}\n"
             f"💬 Whitelist Kata : {wl_w}\n"
-            f"🛑 Kata Terlarang : {bw}\n\n"
-            f"🕒 Waktu : {datetime.now().strftime('%H:%M:%S')}\n"
-            f"📅 Tanggal : {datetime.now().strftime('%d %B %Y')}\n"
-            f"👤 Diperbarui oleh : {message.from_user.mention}\n"
+            f"🛑 Kata Terlarang : {bw}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━"
         )
 
@@ -98,7 +93,7 @@ async def autoban_cmd(client, message: Message, _):
 # =====================
 # /wl COMMAND
 # =====================
-@Client.on_message(filters.command("wl") & filters.group)
+@app.on_message(filters.command("wl") & filters.group)
 @AdminRightsCheck
 async def whitelist_cmd(client, message: Message, _):
     if len(message.command) < 2:
@@ -149,7 +144,7 @@ async def whitelist_cmd(client, message: Message, _):
 # =====================
 # /badword COMMAND
 # =====================
-@Client.on_message(filters.command("badword") & filters.group)
+@app.on_message(filters.command("badword") & filters.group)
 @AdminRightsCheck
 async def badword_cmd(client, message: Message, _):
     if len(message.command) < 2:
@@ -179,7 +174,7 @@ async def badword_cmd(client, message: Message, _):
 # =====================
 # AUTO BAN HANDLER
 # =====================
-@Client.on_message(filters.group & filters.text, group=2)
+@app.on_message(filters.group & filters.text, group=2)
 async def autoban_handler(client, message: Message):
     if not message.from_user:
         return
@@ -190,10 +185,8 @@ async def autoban_handler(client, message: Message):
 
     if not autoban_active(chat_id):
         return
-
     if is_whitelist_user(user_id):
         return
-
     if is_whitelist_word(text):
         return
 
@@ -201,15 +194,19 @@ async def autoban_handler(client, message: Message):
         await message.delete()
         await client.ban_chat_member(chat_id, user_id)
 
+        time_str = datetime.now().strftime("%H:%M:%S")
+
         notif = await message.reply(
-            f"🚫 **AUTO BAN AKTIF** 🚫\n\n"
-            f"👤 {message.from_user.mention}\n"
-            f"💬 `{message.text}`"
+            f"🚫⚠️ **ᴀᴜᴛᴏ ʙᴀɴ ᴀᴄᴛɪᴠᴀᴛᴇ** ⚠️🚫\n\n"
+            f"👤 User  : {message.from_user.mention}\n"
+            f"💬 Pesan : `{message.text}`\n"
+            f"🕒 Waktu : {time_str}\n\n"
+            f"⛔ Pesan dihapus & user di-ban otomatis"
         )
 
         await client.send_message(
             LOG_CHANNEL,
-            f"🚨 AUTO BAN LOG\n"
+            f"🚨 **AUTO BAN LOG**\n"
             f"👤 {message.from_user.mention}\n"
             f"🆔 `{user_id}`\n"
             f"💬 {message.chat.title}\n"
