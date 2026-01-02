@@ -1,4 +1,4 @@
-from AnnieXMusic.core.mongo import mongodb
+from AnnieXMedia.core.mongo import mongodb
 
 db = mongodb.Annie
 collection = db.chats
