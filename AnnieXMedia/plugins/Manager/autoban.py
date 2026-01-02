@@ -1,38 +1,16 @@
 import asyncio
+import re
+from datetime import datetime
+
 from pyrogram import Client, filters
 from pyrogram.enums import ChatMemberStatus
-import sqlite3, re
-from datetime import datetime
+
+from AnnieXMedia.core.mongo import mongodb
 
 # =====================
 # CONFIG
 # =====================
-LOG_CHANNEL = -1002620223816  # GANTI ID CHANNEL LOG
-
-# =====================
-# DATABASE SQLITE
-# =====================
-db = sqlite3.connect("autoban.db", check_same_thread=False)
-cur = db.cursor()
-
-cur.execute("""CREATE TABLE IF NOT EXISTS autoban (
-    chat_id INTEGER PRIMARY KEY,
-    status INTEGER
-)""")
-
-cur.execute("""CREATE TABLE IF NOT EXISTS whitelist_users (
-    user_id INTEGER PRIMARY KEY
-)""")
-
-cur.execute("""CREATE TABLE IF NOT EXISTS whitelist_words (
-    word TEXT PRIMARY KEY
-)""")
-
-cur.execute("""CREATE TABLE IF NOT EXISTS banned_words (
-    word TEXT PRIMARY KEY
-)""")
-
-db.commit()
+LOG_CHANNEL = -1002620223816  # GANTI JIKA PERLU
 
 # =====================
 # REGEX ANTI SENSOR
@@ -43,30 +21,38 @@ BAD_REGEX = re.compile(
 )
 
 # =====================
-# HELPER FUNCTION
+# HELPER (MONGO ASYNC)
 # =====================
-def autoban_active(chat_id):
-    cur.execute("SELECT status FROM autoban WHERE chat_id=?", (chat_id,))
-    r = cur.fetchone()
-    return r and r[0] == 1
+async def autoban_active(chat_id: int) -> bool:
+    data = await mongodb.autoban.find_one({"chat_id": chat_id})
+    return bool(data and data.get("status") == 1)
 
-def is_whitelist_user(uid):
-    cur.execute("SELECT 1 FROM whitelist_users WHERE user_id=?", (uid,))
-    return cur.fetchone() is not None
 
-def is_whitelist_word(text):
-    cur.execute("SELECT word FROM whitelist_words")
-    return any(w[0] in text for w in cur.fetchall())
+async def is_whitelist_user(user_id: int) -> bool:
+    return await mongodb.whitelist_users.find_one(
+        {"user_id": user_id}
+    ) is not None
 
-def is_banned_word(text):
-    cur.execute("SELECT word FROM banned_words")
-    return any(w[0] in text for w in cur.fetchall())
+
+async def is_whitelist_word(text: str) -> bool:
+    async for w in mongodb.whitelist_words.find():
+        if w["word"] in text:
+            return True
+    return False
+
+
+async def is_banned_word(text: str) -> bool:
+    async for w in mongodb.banned_words.find():
+        if w["word"] in text:
+            return True
+    return False
+
 
 # =====================
 # /autoban on | off | status
 # =====================
 @Client.on_message(filters.command("autoban") & filters.group)
-async def autoban_cmd(client, message):
+async def autoban_cmd(client: Client, message):
     member = await client.get_chat_member(message.chat.id, message.from_user.id)
     if member.status not in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
         return await message.reply("❌ Admin saja.")
@@ -79,175 +65,183 @@ async def autoban_cmd(client, message):
 
     if sub in ("on", "off"):
         status = 1 if sub == "on" else 0
-        cur.execute("INSERT OR REPLACE INTO autoban VALUES (?,?)", (chat_id, status))
-        db.commit()
+
+        await mongodb.autoban.update_one(
+            {"chat_id": chat_id},
+            {"$set": {"status": status}},
+            upsert=True
+        )
 
         return await message.reply_text(
-            f"📢 **AUTO BAN UPDATE**\n"
+            f"🚨 **AUTO BAN SYSTEM**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"⚙️ Status: {'🟢 ONLINE' if status else '🔴 OFFLINE'}\n"
-            f"🕒 Waktu: {datetime.now().strftime('%H:%M:%S')}\n"
-            f"👤 Oleh: {message.from_user.mention}\n"
+            f"⚙️ Status : {'🟢 AKTIF' if status else '🔴 NONAKTIF'}\n"
+            f"👤 Oleh   : {message.from_user.mention}\n"
+            f"🕒 Waktu  : {datetime.now().strftime('%H:%M:%S')}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━"
         )
 
     if sub == "status":
-        cur.execute("SELECT COUNT(*) FROM whitelist_users")
-        wl_u = cur.fetchone()[0]
-        cur.execute("SELECT COUNT(*) FROM whitelist_words")
-        wl_w = cur.fetchone()[0]
-        cur.execute("SELECT COUNT(*) FROM banned_words")
-        bw = cur.fetchone()[0]
+        wl_user = await mongodb.whitelist_users.count_documents({})
+        wl_word = await mongodb.whitelist_words.count_documents({})
+        bw_word = await mongodb.banned_words.count_documents({})
 
         return await message.reply_text(
-            f"📢 **P E M B E R I T A H U A N**\n"
+            f"🚨 **AUTO BAN STATUS**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"🚨⚠️ **AUTO BAN STATUS BOT** ⚠️🚨\n\n"
-            f"⚙️ Status Sistem : {'🟢 ONLINE' if autoban_active(chat_id) else '🔴 OFFLINE'}\n"
-            f"🛡️ Mode Proteksi : Regex + Custom Word\n"
-            f"👤 Whitelist User : {wl_u}\n"
-            f"💬 Whitelist Kata : {wl_w}\n"
-            f"🛑 Kata Terlarang : {bw}\n\n"
-            f"🕒 Waktu : {datetime.now().strftime('%H:%M:%S')}\n"
-            f"📅 Tanggal : {datetime.now().strftime('%d %B %Y')}\n"
-            f"👤 Diperbarui oleh : {message.from_user.mention}\n"
+            f"⚙️ Sistem : {'🟢 AKTIF' if await autoban_active(chat_id) else '🔴 MATI'}\n"
+            f"🛡️ Mode   : Regex + Custom Word\n\n"
+            f"👤 Whitelist User : {wl_user}\n"
+            f"💬 Whitelist Kata : {wl_word}\n"
+            f"🛑 Kata Terlarang : {bw_word}\n\n"
+            f"🕒 {datetime.now().strftime('%H:%M:%S')}\n"
             f"━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💠 **ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 」**"
+            f"💠 **Official Onlyforacha X Bot**"
         )
+
 
 # =====================
 # WHITELIST COMMAND
 # =====================
 @Client.on_message(filters.command("wl") & filters.group)
-async def whitelist_cmd(client, message):
+async def whitelist_cmd(client: Client, message):
     member = await client.get_chat_member(message.chat.id, message.from_user.id)
     if member.status not in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
         return
 
     if len(message.command) < 2:
-        return await message.reply("`/wl user|deluser (reply)`\n`/wl word|delword <kata>`\n`/wl list`")
+        return await message.reply(
+            "`/wl user (reply)`\n"
+            "`/wl deluser (reply)`\n"
+            "`/wl word <kata>`\n"
+            "`/wl delword <kata>`\n"
+            "`/wl list`"
+        )
 
     sub = message.command[1].lower()
 
     if sub == "user" and message.reply_to_message:
         uid = message.reply_to_message.from_user.id
-        cur.execute("INSERT OR IGNORE INTO whitelist_users VALUES (?)", (uid,))
-        db.commit()
+        await mongodb.whitelist_users.update_one(
+            {"user_id": uid}, {"$set": {"user_id": uid}}, upsert=True
+        )
         return await message.reply("✅ User di-whitelist.")
 
     if sub == "deluser" and message.reply_to_message:
         uid = message.reply_to_message.from_user.id
-        cur.execute("DELETE FROM whitelist_users WHERE user_id=?", (uid,))
-        db.commit()
+        await mongodb.whitelist_users.delete_one({"user_id": uid})
         return await message.reply("❌ User dihapus.")
 
     if sub == "word" and len(message.command) > 2:
         word = " ".join(message.command[2:]).lower()
-        cur.execute("INSERT OR IGNORE INTO whitelist_words VALUES (?)", (word,))
-        db.commit()
+        await mongodb.whitelist_words.update_one(
+            {"word": word}, {"$set": {"word": word}}, upsert=True
+        )
         return await message.reply("✅ Kata di-whitelist.")
 
     if sub == "delword" and len(message.command) > 2:
         word = " ".join(message.command[2:]).lower()
-        cur.execute("DELETE FROM whitelist_words WHERE word=?", (word,))
-        db.commit()
+        await mongodb.whitelist_words.delete_one({"word": word})
         return await message.reply("❌ Kata dihapus.")
 
     if sub == "list":
-        cur.execute("SELECT user_id FROM whitelist_users")
-        users = "\n".join(str(x[0]) for x in cur.fetchall()) or "Kosong"
-        cur.execute("SELECT word FROM whitelist_words")
-        words = "\n".join(x[0] for x in cur.fetchall()) or "Kosong"
-        return await message.reply_text(f"📂 **WHITELIST**\n👤 User:\n{users}\n\n💬 Kata:\n{words}")
+        users = [str(u["user_id"]) async for u in mongodb.whitelist_users.find()]
+        words = [w["word"] async for w in mongodb.whitelist_words.find()]
+
+        return await message.reply_text(
+            f"📂 **WHITELIST**\n\n"
+            f"👤 User:\n{chr(10).join(users) if users else 'Kosong'}\n\n"
+            f"💬 Kata:\n{chr(10).join(words) if words else 'Kosong'}"
+        )
+
 
 # =====================
 # BADWORD COMMAND
 # =====================
 @Client.on_message(filters.command("badword") & filters.group)
-async def badword_cmd(client, message):
+async def badword_cmd(client: Client, message):
     member = await client.get_chat_member(message.chat.id, message.from_user.id)
     if member.status not in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
         return
 
     if len(message.command) < 2:
-        return await message.reply("`/badword add|del <kata>`\n`/badword list`")
+        return await message.reply("`/badword add|del|list <kata>`")
 
     sub = message.command[1].lower()
 
     if sub == "add" and len(message.command) > 2:
         word = " ".join(message.command[2:]).lower()
-        cur.execute("INSERT OR IGNORE INTO banned_words VALUES (?)", (word,))
-        db.commit()
+        await mongodb.banned_words.update_one(
+            {"word": word}, {"$set": {"word": word}}, upsert=True
+        )
         return await message.reply("✅ Kata terlarang ditambahkan.")
 
     if sub == "del" and len(message.command) > 2:
         word = " ".join(message.command[2:]).lower()
-        cur.execute("DELETE FROM banned_words WHERE word=?", (word,))
-        db.commit()
+        await mongodb.banned_words.delete_one({"word": word})
         return await message.reply("❌ Kata terlarang dihapus.")
 
     if sub == "list":
-        cur.execute("SELECT word FROM banned_words")
-        words = "\n".join(w[0] for w in cur.fetchall()) or "Kosong"
-        return await message.reply_text(f"🛑 **KATA TERLARANG**\n{words}")
+        words = [w["word"] async for w in mongodb.banned_words.find()]
+        return await message.reply_text(
+            f"🛑 **KATA TERLARANG**\n{chr(10).join(words) if words else 'Kosong'}"
+        )
+
 
 # =====================
 # AUTO BAN HANDLER
 # =====================
 @Client.on_message(filters.group & filters.text)
-async def autoban_handler(client, message):
-    if not autoban_active(message.chat.id):
+async def autoban_handler(client: Client, message):
+    if not await autoban_active(message.chat.id):
         return
+
     if not message.from_user:
         return
-    if is_whitelist_user(message.from_user.id):
+
+    if await is_whitelist_user(message.from_user.id):
         return
 
     text = message.text.lower()
-    if is_whitelist_word(text):
+
+    if await is_whitelist_word(text):
         return
 
     member = await client.get_chat_member(message.chat.id, message.from_user.id)
     if member.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
         return
 
-    if BAD_REGEX.search(text) or is_banned_word(text):
+    if BAD_REGEX.search(text) or await is_banned_word(text):
         await message.delete()
         await client.ban_chat_member(message.chat.id, message.from_user.id)
 
-    now = datetime.now()
-    time_str = now.strftime("%H:%M:%S")
-    date_str = now.strftime("%d %B %Y")
+        now = datetime.now()
+        notif = await message.reply(
+            f"🚫⚠️ ** ᴀᴜᴛᴏ ʙᴀɴ ᴀᴄᴛɪᴠᴀᴛᴇ ** ⚠️🚫\n\n"
+            f"👤 Bot   : Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ\n"
+            f"🕒 Waktu : {time_str}\n"
+            f"💬 Grup  : {message.chat.title}\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"👤 User  : {message.from_user.mention}\n"
+            f"💬 Pesan : `{message.text}`\n\n"
+            f"⛔ **TINDAKAN**\n"
+            f"• Pesan dihapus✅\n"
+            f"• User di-ban otomatis✅\n\n"
+            f"📛 **Alasan:**\n"
+            f"Melanggar peraturan grup (Kalimat Terlarang)\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 🌸」"
+         )
 
-    notif = await message.reply(
-    f"🚫⚠️ ** ᴀᴜᴛᴏ ʙᴀɴ ᴀᴄᴛɪᴠᴀᴛᴇ ** ⚠️🚫\n\n"
-    f"👤 Bot   : Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ\n"
-    f"🕒 Waktu : {time_str}\n"
-    f"💬 Grup  : {message.chat.title}\n\n"
-    f"━━━━━━━━━━━━━━━━━━━━━━\n"
-    f"👤 User  : {message.from_user.mention}\n"
-    f"💬 Pesan : `{message.text}`\n\n"
-    f"⛔ **TINDAKAN**\n"
-    f"• Pesan dihapus✅\n"
-    f"• User di-ban otomatis✅\n\n"
-    f"📛 **Alasan:**\n"
-    f"Melanggar peraturan grup (Kalimat Terlarang)\n"
-    f"━━━━━━━━━━━━━━━━━━━━━━\n\n"
-    f"💠 **Moderasi otomatis oleh**\n"
-    f"ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 」"
-    )
+        await client.send_message(
+            LOG_CHANNEL,
+            f"🚨 AUTO BAN LOG\n"
+            f"User: {message.from_user.mention}\n"
+            f"ID: `{message.from_user.id}`\n"
+            f"Grup: {message.chat.title}\n"
+            f"Pesan: {message.text}\n"
+            f"Waktu: {now.strftime('%H:%M:%S')}"
+        )
 
-    await client.send_message(
-        LOG_CHANNEL,
-        f"🚨 **AUTO BAN LOG**\n"
-        f"👤 {message.from_user.mention}\n"
-        f"🆔 `{message.from_user.id}`\n"
-        f"💬 {message.chat.title}\n"
-        f"💬 Pesan: {message.text}\n"
-        f"🕒 {time_str}"
-    )
-
-    await asyncio.sleep(10)
-    await notif.delete()
-
-        
+        await asyncio.sleep(10)
+        await notif.delete()
