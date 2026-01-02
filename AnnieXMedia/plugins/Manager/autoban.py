@@ -4,11 +4,11 @@ import re
 import asyncio
 from datetime import datetime
 from pyrogram import filters
-from pyrogram.enums import ChatMemberStatus
 from pyrogram.types import Message
 
 from AnnieXMedia.core.bot import Client
 from AnnieXMedia.core.mongo import mongodb as db
+from AnnieXMedia.utils.decorators import AdminRightsCheck  # <-- Import decorator
 
 # =====================
 # CONFIG
@@ -43,21 +43,16 @@ def is_banned_word(text):
 # /autoban COMMAND
 # =====================
 @Client.on_message(filters.command("autoban") & filters.group)
-async def autoban_cmd(Client, message: Message):
-    member = await Client.get_chat_member(message.chat.id, message.from_user.id)
-    if member.status not in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
-        return await message.reply("❌ Hanya Admin yang bisa mengakses fitur ini.")
-
+@AdminRightsCheck  # <-- Admin decorator
+async def autoban_cmd(Client, message: Message, _, chat_id):
     if len(message.command) < 2:
         return await message.reply("`/autoban on | off | status`")
 
     sub = message.command[1].lower()
-    chat_id = message.chat.id
 
     if sub in ("on", "off"):
         status = 1 if sub == "on" else 0
         db.autoban.update_one({"chat_id": chat_id}, {"$set": {"status": status}}, upsert=True)
-
         return await message.reply_text(
             f"📢 **AUTO BAN UPDATE**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -71,7 +66,6 @@ async def autoban_cmd(Client, message: Message):
         wl_u = db.whitelist_users.count_documents({})
         wl_w = db.whitelist_words.count_documents({})
         bw = db.banned_words.count_documents({})
-
         return await message.reply_text(
             f"📢 **P E M B E R I T A H U A N**\n"
             f"━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -91,14 +85,13 @@ async def autoban_cmd(Client, message: Message):
 # =====================
 # /wl COMMAND
 # =====================
-@client.on_message(filters.command("wl") & filters.group)
-async def whitelist_cmd(client, message: Message):
-    member = await client.get_chat_member(message.chat.id, message.from_user.id)
-    if member.status not in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
-        return
-
+@Client.on_message(filters.command("wl") & filters.group)
+@AdminRightsCheck
+async def whitelist_cmd(Client, message: Message, _, chat_id):
     if len(message.command) < 2:
-        return await message.reply("`/wl user|deluser (reply)`\n`/wl word|delword <kata>`\n`/wl list`")
+        return await message.reply(
+            "`/wl user|deluser (reply)`\n`/wl word|delword <kata>`\n`/wl list`"
+        )
 
     sub = message.command[1].lower()
 
@@ -130,12 +123,9 @@ async def whitelist_cmd(client, message: Message):
 # =====================
 # /badword COMMAND
 # =====================
-@client.on_message(filters.command("badword") & filters.group)
-async def badword_cmd(Client, message: Message):
-    member = await Client.get_chat_member(message.chat.id, message.from_user.id)
-    if member.status not in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
-        return
-
+@Client.on_message(filters.command("badword") & filters.group)
+@AdminRightsCheck
+async def badword_cmd(Client, message: Message, _, chat_id):
     if len(message.command) < 2:
         return await message.reply("`/badword add|del <kata>`\n`/badword list`")
 
@@ -158,7 +148,7 @@ async def badword_cmd(Client, message: Message):
 # =====================
 # AUTO BAN HANDLER
 # =====================
-@client.on_message(filters.group & filters.text)
+@Client.on_message(filters.group & filters.text)
 async def autoban_handler(Client, message: Message):
     if not autoban_active(message.chat.id):
         return
@@ -169,10 +159,6 @@ async def autoban_handler(Client, message: Message):
 
     text = message.text.lower()
     if is_whitelist_word(text):
-        return
-
-    member = await Client.get_chat_member(message.chat.id, message.from_user.id)
-    if member.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
         return
 
     if BAD_REGEX.search(text) or is_banned_word(text):
