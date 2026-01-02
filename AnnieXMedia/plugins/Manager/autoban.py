@@ -7,7 +7,7 @@ from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from pyrogram.types import Message
 
-from AnnieXMedia.core.bot import client
+from AnnieXMedia.core.bot import Client
 from AnnieXMedia.core.mongo import db
 
 # =====================
