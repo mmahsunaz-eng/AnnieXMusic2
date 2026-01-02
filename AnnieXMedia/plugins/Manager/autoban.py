@@ -5,7 +5,7 @@ from datetime import datetime
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from AnnieXMedia import app
-from utils.autoban_db import (
+from AnnieXMedia.utils.autoban_db import (
     get_chat, add_word, remove_word,
     set_status, add_whitelist, remove_whitelist
 )
