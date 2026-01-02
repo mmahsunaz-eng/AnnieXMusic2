@@ -163,7 +163,6 @@ async def whitelist_cmd(app, message: Message, _):
     group=100
 )
 async def autoban_handler(app, message: Message):
-async def autoban_handler(app, message: Message):
     if not message.from_user:
         return
 
