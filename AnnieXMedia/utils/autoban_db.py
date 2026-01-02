@@ -1,14 +1,24 @@
-from AnnieXMedia.core.mongo import mongodb
+from AnnieXMusic.core.mongo import mongodb
 
-autoban = mongodb.autoban
+db = mongodb.Annie
+collection = db.chats
 
 
 async def get_chat(chat_id: int):
-    return await autoban.find_one({"chat_id": chat_id})
+    data = await collection.find_one({"chat_id": chat_id})
+    if not data:
+        data = {
+            "chat_id": chat_id,
+            "enabled": False,
+            "words": [],
+            "whitelist": []
+        }
+        await collection.insert_one(data)
+    return data
 
 
 async def set_status(chat_id: int, status: bool):
-    await autoban.update_one(
+    await collection.update_one(
         {"chat_id": chat_id},
         {"$set": {"enabled": status}},
         upsert=True
@@ -16,7 +26,7 @@ async def set_status(chat_id: int, status: bool):
 
 
 async def add_word(chat_id: int, word: str):
-    await autoban.update_one(
+    await collection.update_one(
         {"chat_id": chat_id},
         {"$addToSet": {"words": word}},
         upsert=True
@@ -24,14 +34,14 @@ async def add_word(chat_id: int, word: str):
 
 
 async def remove_word(chat_id: int, word: str):
-    await autoban.update_one(
+    await collection.update_one(
         {"chat_id": chat_id},
         {"$pull": {"words": word}}
     )
 
 
 async def add_whitelist(chat_id: int, user_id: int):
-    await autoban.update_one(
+    await collection.update_one(
         {"chat_id": chat_id},
         {"$addToSet": {"whitelist": user_id}},
         upsert=True
@@ -39,7 +49,7 @@ async def add_whitelist(chat_id: int, user_id: int):
 
 
 async def remove_whitelist(chat_id: int, user_id: int):
-    await autoban.update_one(
+    await collection.update_one(
         {"chat_id": chat_id},
         {"$pull": {"whitelist": user_id}}
-)
+    )
