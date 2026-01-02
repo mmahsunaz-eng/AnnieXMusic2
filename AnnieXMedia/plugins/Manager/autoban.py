@@ -23,6 +23,7 @@ def build_regex(word: str):
     return "".join([f"{c}[\\W_]*" for c in word])
 
 # ================= AUTO BAN =================
+# ================= AUTO BAN =================
 @app.on_message(filters.group & filters.text)
 async def autoban_handler(client, message):
     if not message.from_user:
@@ -50,7 +51,10 @@ async def autoban_handler(client, message):
             try:
                 time_str = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
+                # hapus pesan kotor
                 await message.delete()
+
+                # ban user
                 await client.ban_chat_member(
                     message.chat.id,
                     message.from_user.id
@@ -74,22 +78,23 @@ async def autoban_handler(client, message):
                     f"ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 」"
                 )
 
+                # kirim notifikasi ke grup
                 notice = await client.send_message(
-    message.chat.id,
-    log_text
-)
+                    message.chat.id,
+                    log_text
+                )
 
-# auto delete 5 detik
-await asyncio.sleep(5)
-await notice.delete()
+                # auto delete 5 detik
+                await asyncio.sleep(5)
+                await notice.delete()
 
+                # kirim log permanen
                 if LOG_CHAT:
                     await client.send_message(LOG_CHAT, log_text)
 
             except Exception as e:
                 print("AUTOBAN ERROR:", e)
             break
-
 # ================= COMMAND =================
 
 @app.on_message(filters.command("addbadword") & filters.group)
