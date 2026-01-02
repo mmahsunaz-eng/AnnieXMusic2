@@ -42,11 +42,11 @@ def is_banned_word(text):
 # =====================
 # /autoban COMMAND
 # =====================
-@client.on_message(filters.command("autoban") & filters.group)
-async def autoban_cmd(client, message: Message):
-    member = await client.get_chat_member(message.chat.id, message.from_user.id)
+@Client.on_message(filters.command("autoban") & filters.group)
+async def autoban_cmd(Client, message: Message):
+    member = await Client.get_chat_member(message.chat.id, message.from_user.id)
     if member.status not in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
-        return await message.reply("❌ Admin saja.")
+        return await message.reply("❌ Hanya Admin yang bisa mengakses fitur ini.")
 
     if len(message.command) < 2:
         return await message.reply("`/autoban on | off | status`")
@@ -131,8 +131,8 @@ async def whitelist_cmd(client, message: Message):
 # /badword COMMAND
 # =====================
 @client.on_message(filters.command("badword") & filters.group)
-async def badword_cmd(client, message: Message):
-    member = await client.get_chat_member(message.chat.id, message.from_user.id)
+async def badword_cmd(Client, message: Message):
+    member = await Client.get_chat_member(message.chat.id, message.from_user.id)
     if member.status not in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
         return
 
@@ -159,7 +159,7 @@ async def badword_cmd(client, message: Message):
 # AUTO BAN HANDLER
 # =====================
 @client.on_message(filters.group & filters.text)
-async def autoban_handler(client, message: Message):
+async def autoban_handler(Client, message: Message):
     if not autoban_active(message.chat.id):
         return
     if not message.from_user:
@@ -171,13 +171,13 @@ async def autoban_handler(client, message: Message):
     if is_whitelist_word(text):
         return
 
-    member = await client.get_chat_member(message.chat.id, message.from_user.id)
+    member = await Client.get_chat_member(message.chat.id, message.from_user.id)
     if member.status in (ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER):
         return
 
     if BAD_REGEX.search(text) or is_banned_word(text):
         await message.delete()
-        await client.ban_chat_member(message.chat.id, message.from_user.id)
+        await Client.ban_chat_member(message.chat.id, message.from_user.id)
 
         now = datetime.now()
         time_str = now.strftime("%H:%M:%S")
@@ -201,7 +201,7 @@ async def autoban_handler(client, message: Message):
             f"ᴏꜰꜰɪᴄɪᴀʟ 「 Oɴʟʏғᴏʀᴀᴄʜᴀ ✘ ʙᴏᴛ 」"
         )
 
-        await client.send_message(
+        await Client.send_message(
             LOG_CHANNEL,
             f"🚨 **AUTO BAN LOG**\n"
             f"👤 {message.from_user.mention}\n"
