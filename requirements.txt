@@ -6,6 +6,7 @@ bing_image_downloader
 bs4
 deepai
 edge-tts
+Pyrogram>=2.0.106
 ffmpeg-python
 future
 gitpython
