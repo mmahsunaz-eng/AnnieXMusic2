@@ -279,7 +279,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestaudio[acodec=opus]/bestaudio")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestaudio[ext=webm]/bestaudio[ext=m4a]/bestaudio/best")
                 )
             )
             api_task = asyncio.create_task(api_download_audio(link)) if USE_AUDIO_API else None
@@ -298,7 +298,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "(bestvideo[height<=?720][width<=?1280]bestvideo])+(bestaudio)")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "(bestvideo[height<=720][width<=1280]/bestvideo)+bestaudio/best")
                 )
             )
             api_task = asyncio.create_task(api_download_video(link)) if USE_VIDEO_API else None
