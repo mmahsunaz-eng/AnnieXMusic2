@@ -262,7 +262,7 @@ class YouTubeAPI:
             *(_cookies_args()),
             "-g",
             "-f",
-            "best[height<=?720][width<=?1280]",
+            "bestvideo[height<=?720]+bestaudio/best",
             link,
         )
         return (1, stdout.decode().split("\n")[0]) if stdout else (0, stderr.decode())
@@ -393,7 +393,7 @@ class YouTubeAPI:
                 *(_cookies_args()),
                 "-g",
                 "-f",
-                "best[height<=?720][width<=?1280]",
+                "bestvideo[height<=?720]+bestaudio/best",
                 link,
             )
             if stdout:
