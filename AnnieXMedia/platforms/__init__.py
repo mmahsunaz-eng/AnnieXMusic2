@@ -1,5 +1,4 @@
-﻿# Authored By Certified Coders © 2025
-from .Apple import AppleAPI
+﻿# Authored By Certified 
 from .Carbon import CarbonAPI
 from .Resso import RessoAPI
 from .Soundcloud import SoundAPI
