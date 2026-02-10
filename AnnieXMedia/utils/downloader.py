@@ -74,14 +74,13 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "overwrites": False,
         "continuedl": True,
         "noprogress": True,
-        "concurrent_fragment_downloads": 16,
+        "concurrent_fragment_downloads": 15,
         "http_chunk_size": 1 << 20,
         "socket_timeout": 15,
         "retries": 1,
         "fragment_retries": 1,
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": True,
-        "merge_output_format": "mp4"
     }
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
@@ -298,7 +297,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestvideo[height<=720]/best]")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestvideo[height<=720]/best")
                 )
             )
             api_task = asyncio.create_task(api_download_video(link)) if USE_VIDEO_API else None
