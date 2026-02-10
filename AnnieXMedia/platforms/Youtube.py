@@ -262,7 +262,7 @@ class YouTubeAPI:
             *(_cookies_args()),
             "-g",
             "-f",
-            "bestvideo+bestaudio/best",
+            "bestvideo/best",
             link,
         )
         return (1, stdout.decode().split("\n")[0]) if stdout else (0, stderr.decode())
