@@ -297,7 +297,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestvideo[height<=720]/best")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "best[ext=mp4][height<=720]/best")
                 )
             )
             api_task = asyncio.create_task(api_download_video(link)) if USE_VIDEO_API else None
