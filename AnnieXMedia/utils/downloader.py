@@ -72,18 +72,27 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "no_warnings": True,
         "noplaylist": True,
         "overwrites": False,
-        "continuedl": True,
+
+        # FIX EMPTY DOWNLOAD
+        "continuedl": False,
+        "concurrent_fragment_downloads": 1,
+        "retries": 10,
+        "fragment_retries": 10,
+        "ignoreerrors": False,
+        "skip_unavailable_fragments": False,
+        "extractor_retries": 5,
+        "file_access_retries": 5,
+        "nocheckcertificate": True,
+
         "noprogress": True,
-        "concurrent_fragment_downloads": 15,
         "http_chunk_size": 1 << 20,
         "socket_timeout": 15,
-        "retries": 1,
-        "fragment_retries": 1,
         "cachedir": str(CACHE_DIR),
-        "ignoreerrors": True,
     }
+
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
+
     return opts
 
 
@@ -186,17 +195,37 @@ def get_final_path_from_info(info: Dict) -> Optional[str]:
     vid = info.get("id")
     if not vid:
         return None
+
+    # cek berdasarkan ext dulu
     ext = info.get("ext")
     if ext:
         p = f"{DOWNLOAD_DIR}/{vid}.{ext}"
         if os.path.exists(p):
-            return p
+            if os.path.getsize(p) > 50000:  # minimal 50KB
+                return p
+            else:
+                try:
+                    os.remove(p)
+                except:
+                    pass
+
+    # cek semua kemungkinan file
     matches = sorted(
         glob.glob(f"{DOWNLOAD_DIR}/{vid}.*"),
         key=os.path.getmtime,
         reverse=True,
     )
-    return matches[0] if matches else None
+
+    for p in matches:
+        if os.path.exists(p) and os.path.getsize(p) > 50000:
+            return p
+        else:
+            try:
+                os.remove(p)
+            except:
+                pass
+
+    return None
 
 
 def download_with_ytdlp_sync(link: str, fmt: str) -> Optional[str]:
