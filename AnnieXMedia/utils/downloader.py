@@ -82,8 +82,8 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": True,
         "merge_output_format": "mp4"
-        "format_sort": ["res:720"],
     }
+    
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
     return opts
