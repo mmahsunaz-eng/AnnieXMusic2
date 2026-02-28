@@ -77,12 +77,12 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "concurrent_fragment_downloads": 16,
         "http_chunk_size": 1 << 20,
         "socket_timeout": 15,
-        "retries": 1,
-        "fragment_retries": 1,
+        "retries": 10,
+        "fragment_retries": 10,
         "skip_unavailable_fragments": True,
         "abort_on_unavailable_fragments": False,
         "cachedir": str(CACHE_DIR),
-        "ignoreerrors": True,
+        "ignoreerrors": False,
         "merge_output_format": "mp4"
     }
     
@@ -292,7 +292,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestaudio[ext=m4a]/bestaudio/best")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestaudio/best")
                 )
             )
             api_task = asyncio.create_task(api_download_audio(link)) if USE_AUDIO_API else None
