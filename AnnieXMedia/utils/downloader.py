@@ -72,30 +72,21 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "no_warnings": True,
         "noplaylist": True,
         "overwrites": False,
-
-        # FIX EMPTY DOWNLOAD
-        "continuedl": False,
-        "concurrent_fragment_downloads": 1,
-        "retries": 10,
-        "fragment_retries": 10,
-        "ignoreerrors": False,
-        "skip_unavailable_fragments": False,
-        "extractor_retries": 5,
-        "file_access_retries": 5,
-        "nocheckcertificate": True,
-
+        "continuedl": True,
         "noprogress": True,
+        "concurrent_fragment_downloads": 16,
         "http_chunk_size": 1 << 20,
         "socket_timeout": 15,
+        "retries": 1,
+        "fragment_retries": 1,
         "cachedir": str(CACHE_DIR),
+        "ignoreerrors": True,
+        "merge_output_format": "mp4"
     }
-
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
-
     return opts
-
-
+    
 async def get_http_session() -> aiohttp.ClientSession:
     global _session
     if _session and not _session.closed:
