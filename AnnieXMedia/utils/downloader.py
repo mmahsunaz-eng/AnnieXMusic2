@@ -88,7 +88,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         # 🔥 WAJIB: bypass throttling YouTube
         "extractor_args": {
             "youtube": {
-                "player_client": ["android"]
+                "player_client": ["android", "web"]
             }
         },
 
@@ -311,7 +311,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestaudio/best")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestaudio[acodec!=none]/best")
                 )
             )
             api_task = asyncio.create_task(api_download_audio(link)) if USE_AUDIO_API else None
