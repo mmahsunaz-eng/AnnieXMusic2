@@ -129,7 +129,6 @@ async def close_http_session() -> None:
             await _session.close()
         _session = None
 
-
 async def download_file(url: str, out_path: str) -> Optional[str]:
     if not url:
         return None
