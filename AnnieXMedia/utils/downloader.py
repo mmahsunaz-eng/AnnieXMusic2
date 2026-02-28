@@ -79,6 +79,8 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "socket_timeout": 15,
         "retries": 1,
         "fragment_retries": 1,
+        "skip_unavailable_fragments": True,
+        "abort_on_unavailable_fragments": False,
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": True,
         "merge_output_format": "mp4"
@@ -193,12 +195,34 @@ def download_with_ytdlp_sync(link: str, fmt: str) -> Optional[str]:
     try:
         opts = get_ytdlp_base_opts()
         opts["format"] = fmt
+
         with YoutubeDL(opts) as ydl:
             info = ydl.extract_info(link, download=False)
-            if path := get_final_path_from_info(info):
+
+            # cek cache dulu
+            path = get_final_path_from_info(info)
+            if path and os.path.getsize(path) > 50000:
                 return path
+
+            # download
             ydl.download([link])
-            return get_final_path_from_info(info)
+
+            # cek hasil download
+            path = get_final_path_from_info(info)
+
+            if not path:
+                return None
+
+            # 🔥 FIX UTAMA: hapus file kosong
+            if os.path.getsize(path) < 50000:
+                try:
+                    os.remove(path)
+                except:
+                    pass
+                return None
+
+            return path
+
     except Exception:
         return None
 
