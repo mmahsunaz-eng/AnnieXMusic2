@@ -86,17 +86,21 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "source_address": "0.0.0.0",
 
         # 🔥 WAJIB: bypass throttling YouTube
-        "extractor_args": {
+           "extractor_args": {
             "youtube": {
-                "player_client": ["tv", "android", "web"]
+                "player_client": ["ios", "web_creator", "web"]
             }
         },
 
-        # 🔥 WAJIB: user agent fix
         "http_headers": {
-            "User-Agent": "com.google.android.youtube/17.31.35 (Linux; U; Android 11)"
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)"
         },
 
+        "socket_timeout": 30,
+
+        "cachedir": str(CACHE_DIR),
+        "ignoreerrors": False,
+    }
         # timeout
         "socket_timeout": 30,
 
