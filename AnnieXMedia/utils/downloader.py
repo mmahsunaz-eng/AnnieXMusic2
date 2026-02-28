@@ -64,30 +64,49 @@ def find_cached_file(video_id: str) -> Optional[str]:
             return path
     return None
 
-
 def get_ytdlp_base_opts() -> Dict[str, object]:
     opts = {
         "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s",
+
+        "format": "bestaudio/best",
+
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
-        "overwrites": False,
-        "continuedl": True,
-        "noprogress": True,
-        "concurrent_fragment_downloads": 16,
-        "http_chunk_size": 1 << 20,
-        "socket_timeout": 15,
+        "overwrites": True,
+        "continuedl": False,
+
+        # retry penting
         "retries": 10,
         "fragment_retries": 10,
         "skip_unavailable_fragments": True,
         "abort_on_unavailable_fragments": False,
+
+        # 🔥 WAJIB DI HEROKU
+        "source_address": "0.0.0.0",
+
+        # 🔥 WAJIB: bypass throttling YouTube
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android"]
+            }
+        },
+
+        # 🔥 WAJIB: user agent fix
+        "http_headers": {
+            "User-Agent": "com.google.android.youtube/17.31.35 (Linux; U; Android 11)"
+        },
+
+        # timeout
+        "socket_timeout": 30,
+
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": False,
-        "merge_output_format": "mp4"
     }
-    
+
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
+
     return opts
     
 async def get_http_session() -> aiohttp.ClientSession:
