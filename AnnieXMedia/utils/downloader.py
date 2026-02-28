@@ -82,6 +82,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": True,
         "merge_output_format": "mp4"
+        "format_sort": ["res:720"],
     }
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
@@ -158,29 +159,12 @@ def get_final_path_from_info(info: Dict) -> Optional[str]:
     vid = info.get("id")
     if not vid:
         return None
-    ext = info.get("ext")
-    if ext:
-        p = f"{DOWNLOAD_DIR}/{vid}.{ext}"
-        if os.path.exists(p):
-            return p
-    matches = sorted(
-        glob.glob(f"{DOWNLOAD_DIR}/{vid}.*"),
-        key=os.path.getmtime,
-        reverse=True,
-    )
-    return matches[0] if matches else None
-    
-def get_final_path_from_info(info: Dict) -> Optional[str]:
-    vid = info.get("id")
-    if not vid:
-        return None
 
-    # cek berdasarkan ext dulu
     ext = info.get("ext")
     if ext:
         p = f"{DOWNLOAD_DIR}/{vid}.{ext}"
         if os.path.exists(p):
-            if os.path.getsize(p) > 50000:  # minimal 50KB
+            if os.path.getsize(p) > 50000:
                 return p
             else:
                 try:
@@ -188,7 +172,6 @@ def get_final_path_from_info(info: Dict) -> Optional[str]:
                 except:
                     pass
 
-    # cek semua kemungkinan file
     matches = sorted(
         glob.glob(f"{DOWNLOAD_DIR}/{vid}.*"),
         key=os.path.getmtime,
@@ -205,8 +188,7 @@ def get_final_path_from_info(info: Dict) -> Optional[str]:
                 pass
 
     return None
-
-
+    
 def download_with_ytdlp_sync(link: str, fmt: str) -> Optional[str]:
     try:
         opts = get_ytdlp_base_opts()
@@ -305,7 +287,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "best[ext=mp4][height<=720]/best")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bv*[height<=720]+ba/best")
                 )
             )
             api_task = asyncio.create_task(api_download_video(link)) if USE_VIDEO_API else None
