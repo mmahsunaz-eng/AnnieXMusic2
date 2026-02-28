@@ -163,34 +163,22 @@ async def api_download_audio(link: str) -> Optional[str]:
         return None
 
 
-async def api_download_video(link: str) -> Optional[str]:
-    if not USE_VIDEO_API:
-        return None
-    vid = extract_video_id(link)
+def get_final_path_from_info(info: Dict) -> Optional[str]:
+    vid = info.get("id")
     if not vid:
         return None
-    poll_url = f"{VIDEO_API_URL}/video/{vid}?api={API_KEY}"
-    try:
-        session = await get_http_session()
-        while True:
-            async with session.get(poll_url) as r:
-                if r.status != 200:
-                    return None
-                data = await r.json()
-                status = str(data.get("status", "")).lower()
-                if status == "downloading":
-                    await asyncio.sleep(1.0)
-                    continue
-                if status != "done":
-                    return None
-                dl_url = data.get("link")
-                fmt = data.get("format", "mp4")
-                out_path = f"{DOWNLOAD_DIR}/{vid}.{fmt}"
-                return await download_file(dl_url, out_path)
-    except Exception:
-        return None
-
-
+    ext = info.get("ext")
+    if ext:
+        p = f"{DOWNLOAD_DIR}/{vid}.{ext}"
+        if os.path.exists(p):
+            return p
+    matches = sorted(
+        glob.glob(f"{DOWNLOAD_DIR}/{vid}.*"),
+        key=os.path.getmtime,
+        reverse=True,
+    )
+    return matches[0] if matches else None
+    
 def get_final_path_from_info(info: Dict) -> Optional[str]:
     vid = info.get("id")
     if not vid:
