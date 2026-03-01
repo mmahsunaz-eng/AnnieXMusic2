@@ -88,14 +88,14 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
          # bypass throttling youtube (PALING STABIL 2026)
         "extractor_args": {
             "youtube": {
-                "player_client": ["ios", "web_creator", "web"]
+               "player_client": ["android", "web"]
             }
         },
 
         # user agent
         "http_headers": {
-            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)"
-        },
+    "User-Agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 13)"
+     },
 
         # timeout
         "socket_timeout": 30,
@@ -216,23 +216,22 @@ def download_with_ytdlp_sync(link: str, fmt: str) -> Optional[str]:
         opts["format"] = fmt
 
         with YoutubeDL(opts) as ydl:
+
+            # ✅ extract + download SEKALIGUS
             info = ydl.extract_info(link, download=True)
 
-            # cek cache dulu
-            path = get_final_path_from_info(info)
-            if path and os.path.getsize(path) > 50000:
-                return path
+            if not info:
+                return None
 
-            # download
-            ydl.download([link])
+            # support playlist
+            if "entries" in info:
+                info = info["entries"][0]
 
-            # cek hasil download
             path = get_final_path_from_info(info)
 
             if not path:
                 return None
 
-            # 🔥 FIX UTAMA: hapus file kosong
             if os.path.getsize(path) < 50000:
                 try:
                     os.remove(path)
@@ -242,7 +241,8 @@ def download_with_ytdlp_sync(link: str, fmt: str) -> Optional[str]:
 
             return path
 
-    except Exception:
+    except Exception as e:
+        print("YTDLP ERROR:", e)
         return None
 
 
