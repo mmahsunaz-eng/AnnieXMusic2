@@ -296,11 +296,11 @@ class YouTubeAPI:
         )
         items = stdout.decode().strip().split("\n") if stdout else []
         return [i for i in items if i]
-
     @capture_internal_err
     async def formats(
         self, link: str, videoid: Union[str, bool, None] = None
     ) -> Tuple[List[Dict], str]:
+
         link = self._prepare_link(link, videoid)
         key = f"f:{link}"
         now = time.time()
@@ -311,39 +311,46 @@ class YouTubeAPI:
                 return cached[1], cached[2]
 
         opts = {"quiet": True}
+
         if cf := _cookiefile_path():
             opts["cookiefile"] = cf
 
         out: List[Dict] = []
-    try:
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(link, download=False)
-        
-            for fmt in info.get("formats", []):
-    
-            if not any(k in fmt for k in ("filesize", "filesize_approx")):
-            continue
 
-            if not all(k in fmt for k in ("format_id", "ext")):
-            continue
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
 
-            size = fmt.get("filesize") or fmt.get("filesize_approx")
-            if not size:
-            continue
+                info = ydl.extract_info(link, download=False)
 
-        out.append({
-            "format": fmt.get("format"),
-            "filesize": size,
-            "format_id": fmt["format_id"],
-            "ext": fmt["ext"],
-            "yturl": link,
-        })
-        except Exception:
-            pass
+                for fmt in info.get("formats", []):
+
+                    if not any(k in fmt for k in ("filesize", "filesize_approx")):
+                        continue
+
+                    if not all(k in fmt for k in ("format_id", "ext")):
+                        continue
+
+                    size = fmt.get("filesize") or fmt.get("filesize_approx")
+
+                    if not size:
+                        continue
+
+                    out.append({
+                        "format": fmt.get("format"),
+                        "filesize": size,
+                        "format_id": fmt["format_id"],
+                        "ext": fmt["ext"],
+                        "yturl": link,
+                    })
+
+        except Exception as e:
+            print("FORMAT ERROR:", e)
 
         async with _formats_lock:
+
             if len(_formats_cache) > YOUTUBE_META_MAX:
                 _formats_cache.clear()
+
             _formats_cache[key] = (now, out, link)
 
         return out, link
