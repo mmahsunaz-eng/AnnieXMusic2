@@ -216,7 +216,7 @@ def download_with_ytdlp_sync(link: str, fmt: str) -> Optional[str]:
         opts["format"] = fmt
 
         with YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(link, download=False)
+            info = ydl.extract_info(link, download=True)
 
             # cek cache dulu
             path = get_final_path_from_info(info)
