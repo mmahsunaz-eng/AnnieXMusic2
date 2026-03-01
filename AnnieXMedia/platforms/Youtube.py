@@ -316,10 +316,11 @@ class YouTubeAPI:
 
         out: List[Dict] = []
         try:
-            with yt_dlp.YoutubeDL(opts) as ydl:
-    info = ydl.extract_info(link, download=False)
-    for fmt in info.get("formats", []):
-
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(link, download=False)
+        
+        for fmt in info.get("formats", []):
+    
         if not any(k in fmt for k in ("filesize", "filesize_approx")):
             continue
 
