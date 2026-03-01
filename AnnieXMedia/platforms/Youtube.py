@@ -317,27 +317,26 @@ class YouTubeAPI:
         out: List[Dict] = []
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
-                info = ydl.extract_info(link, download=False)
-                for fmt in info.get("formats", []):
-                    if "dash" in str(fmt.get("format", "")).lower():
-                        continue
-                    if not any(k in fmt for k in ("filesize", "filesize_approx")):
-                        continue
-                    if not all(k in fmt for k in ("format", "format_id", "ext", "format_note")):
-                        continue
-                    size = fmt.get("filesize") or fmt.get("filesize_approx")
-                    if not size:
-                        continue
-                    out.append(
-                        {
-                            "format": fmt["format"],
-                            "filesize": size,
-                            "format_id": fmt["format_id"],
-                            "ext": fmt["ext"],
-                            "format_note": fmt["format_note"],
-                            "yturl": link,
-                        }
-                    )
+    info = ydl.extract_info(link, download=False)
+    for fmt in info.get("formats", []):
+
+        if not any(k in fmt for k in ("filesize", "filesize_approx")):
+            continue
+
+        if not all(k in fmt for k in ("format_id", "ext")):
+            continue
+
+        size = fmt.get("filesize") or fmt.get("filesize_approx")
+        if not size:
+            continue
+
+        out.append({
+            "format": fmt.get("format"),
+            "filesize": size,
+            "format_id": fmt["format_id"],
+            "ext": fmt["ext"],
+            "yturl": link,
+        })
         except Exception:
             pass
 
