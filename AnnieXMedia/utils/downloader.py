@@ -81,7 +81,14 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "fragment_retries": 1,
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": True,
-        "merge_output_format": "mp4"
+        "postprocessors": [
+    {
+        "key": "FFmpegExtractAudio",
+        "preferredcodec": "m4a",
+        "preferredquality": "192"
+    }
+],
+"merge_output_format": "mp4",  # penting untuk video adaptive
     }
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
@@ -205,7 +212,7 @@ def download_with_ytdlp_sync(link: str, fmt: str) -> Optional[str]:
         opts = get_ytdlp_base_opts()
         opts["format"] = fmt
         with YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(link, download=False)
+            info = ydl.extract_info(link, download=True)
             if path := get_final_path_from_info(info):
                 return path
             ydl.download([link])
