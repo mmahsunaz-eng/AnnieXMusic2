@@ -315,20 +315,20 @@ class YouTubeAPI:
             opts["cookiefile"] = cf
 
         out: List[Dict] = []
-        try:
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(link, download=False)
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(link, download=False)
         
-        for fmt in info.get("formats", []):
+            for fmt in info.get("formats", []):
     
-        if not any(k in fmt for k in ("filesize", "filesize_approx")):
+            if not any(k in fmt for k in ("filesize", "filesize_approx")):
             continue
 
-        if not all(k in fmt for k in ("format_id", "ext")):
+            if not all(k in fmt for k in ("format_id", "ext")):
             continue
 
-        size = fmt.get("filesize") or fmt.get("filesize_approx")
-        if not size:
+            size = fmt.get("filesize") or fmt.get("filesize_approx")
+            if not size:
             continue
 
         out.append({
