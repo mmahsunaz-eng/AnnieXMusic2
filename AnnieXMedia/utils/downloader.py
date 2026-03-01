@@ -92,7 +92,14 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
                 "player_client": ["android", "web"]
             }
         },
-
+         "merge_output_format": "mp4",
+        "postprocessors": [
+            {
+                "key": "FFmpegMerger",
+                "preferredcodec": "mp4",
+                "preferredquality": "192",
+            }
+        ],
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": False,
     }
