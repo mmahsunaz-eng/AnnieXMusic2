@@ -68,7 +68,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
     opts = {
         "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s",
 
-        "format": "bestaudio/best",
+        "merge_output_format": "mp4",,
 
         "quiet": True,
         "no_warnings": True,
@@ -311,7 +311,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "ba/b")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestaudio/best")
                 )
             )
             api_task = asyncio.create_task(api_download_audio(link)) if USE_AUDIO_API else None
@@ -330,7 +330,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bv*+ba/b")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link, "bestvideo+bestaudio/best")
                 )
             )
             api_task = asyncio.create_task(api_download_video(link)) if USE_VIDEO_API else None
