@@ -73,16 +73,26 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "overwrites": True,
         "continuedl": False,
 
-        # retry penting
         "retries": 10,
         "fragment_retries": 10,
+        "file_access_retries": 10,
+        "extractor_retries": 10,
+
         "skip_unavailable_fragments": True,
         "abort_on_unavailable_fragments": False,
 
-        # 🔥 WAJIB DI HEROKU
+        "concurrent_fragment_downloads": 1,
+        "http_chunk_size": 10485760,
+
         "source_address": "0.0.0.0",
-        # timeout
         "socket_timeout": 30,
+
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web"]
+            }
+        },
+
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": False,
     }
@@ -294,7 +304,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
         async def run():
             ytdlp_task = asyncio.create_task(
                 run_with_semaphore(
-                    loop.run_in_executor(None, download_with_ytdlp_sync, link,"140/251/250/249/bestaudio/best")
+                    loop.run_in_executor(None, download_with_ytdlp_sync, link,"bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio/best")
                 )
             )
             api_task = asyncio.create_task(api_download_audio(link)) if USE_AUDIO_API else None
