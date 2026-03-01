@@ -68,8 +68,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
     opts = {
         "outtmpl": f"{DOWNLOAD_DIR}/%(id)s.%(ext)s",
 
-        "merge_output_format": "mp4",,
-
+        "merge_output_format": "mp4",
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
