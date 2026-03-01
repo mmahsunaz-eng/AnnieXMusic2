@@ -81,22 +81,8 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
 
         # 🔥 WAJIB DI HEROKU
         "source_address": "0.0.0.0",
-
-         # bypass throttling youtube (PALING STABIL 2026)
-        "extractor_args": {
-            "youtube": {
-               "player_client": ["android", "web"]
-            }
-        },
-
-        # user agent
-        "http_headers": {
-    "User-Agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 13)"
-     },
-
         # timeout
         "socket_timeout": 30,
-
         "cachedir": str(CACHE_DIR),
         "ignoreerrors": False,
     }
