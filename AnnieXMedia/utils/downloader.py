@@ -99,7 +99,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "cachedir": "/tmp",
         "ignoreerrors": False,
         "merge_output_format": "mp4",
-        "ffmpeg_location": "/app/.apt/usr/bin",
+        "ffmpeg_location": "/app/.heroku/vendor/ffmpeg/bin",
     }
 
     if cookiefile := get_cookie_file():
