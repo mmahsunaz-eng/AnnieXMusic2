@@ -253,7 +253,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "(bestvideo[height<=?720][ext=mp4])+(bestaudio)",
+                    "best[ext=mp4][height<=480]",
                     False,  # video mode
                 )
             )
