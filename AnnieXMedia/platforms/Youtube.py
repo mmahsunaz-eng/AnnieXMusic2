@@ -262,7 +262,7 @@ class YouTubeAPI:
             *(_cookies_args()),
             "-g",
             "-f",
-           "best[ext=mp4][height<=480]",
+            "best[ext=mp4][vcodec^=avc1][acodec^=mp4a][protocol^=http][height<=480]",
             link,
         )
         return (1, stdout.decode().split("\n")[0]) if stdout else (0, stderr.decode())
@@ -400,7 +400,7 @@ class YouTubeAPI:
                 *(_cookies_args()),
                 "-g",
                 "-f",
-                "best[ext=mp4][height<=480]",
+                "best[ext=mp4][vcodec^=avc1][acodec^=mp4a][protocol^=http][height<=480]",
                 link,
             )
             if stdout:
