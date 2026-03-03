@@ -14,7 +14,7 @@ from AnnieXMedia.plugins import ALL_MODULES
 from AnnieXMedia.utils.database import get_banned_users, get_gbanned
 from AnnieXMedia.utils.cookie_handler import fetch_and_store_cookies
 from config import BANNED_USERS
-os.environ["PATH"] += os.pathsep + "/app/.heroku/vendor/ffmpeg/bin"
+os.environ["PATH"] += os.pathsep + "/app/.apt/usr/bin"
 
 async def init():
     if (
