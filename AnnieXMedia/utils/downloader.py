@@ -137,14 +137,6 @@ def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> O
         opts = get_ytdlp_base_opts()
         opts["format"] = fmt
 
-        # hanya untuk /play
-        if audio_only:
-            opts["postprocessors"] = [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "192",
-            }]
-
         with YoutubeDL(opts) as ydl:
             info = ydl.extract_info(link, download=True)
 
@@ -241,7 +233,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "bestaudio[ext=webm][acodec=opus]",
+                    "bestaudio/best",
                     True,  # audio mode
                 )
             )
