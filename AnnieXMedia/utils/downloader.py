@@ -235,7 +235,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "bestaudio/best",
+                    "bestaudio[acodec^=mp4a]",
                     True,  # audio mode
                 )
             )
