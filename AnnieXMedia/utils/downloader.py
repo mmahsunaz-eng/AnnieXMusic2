@@ -100,9 +100,15 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "cachedir": "/tmp",
         "ignoreerrors": False,
         "ffmpeg_location": "/app/.apt/usr/bin",
+
+        "http_headers": {
+            "User-Agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 12)"
+        },
+
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "web"]
+                "player_client": ["android"],
+                "player_skip": ["webpage", "configs"],
             }
         },
     }
