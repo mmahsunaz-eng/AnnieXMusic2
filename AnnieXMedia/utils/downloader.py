@@ -89,6 +89,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
+        "verbose": True, 
         "overwrites": False,
         "continuedl": True,
         "noprogress": True,
@@ -141,7 +142,7 @@ def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> O
         if audio_only:
             opts["postprocessors"] = [{
                 "key": "FFmpegExtractAudio",
-                "preferredcodec": "m4a",
+                "preferredcodec": "mp3",
                 "preferredquality": "192",
             }]
 
@@ -241,7 +242,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "bestaudio[abr>0]/bestaudio/best",
+                    "bestaudio*/bestaudio/best",
                     True,  # audio mode
                 )
             )
