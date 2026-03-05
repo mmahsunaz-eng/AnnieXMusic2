@@ -89,7 +89,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
-        "verbose": True, 
+        "verbose": True,
         "overwrites": False,
         "continuedl": True,
         "noprogress": True,
@@ -98,14 +98,13 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "retries": 2,
         "fragment_retries": 2,
         "cachedir": "/tmp",
-        "ignoreerrors": False, 
+        "ignoreerrors": False,
         "ffmpeg_location": "/app/.apt/usr/bin",
         "extractor_args": {
             "youtube": {
-               "player_client": 
-        ["android", "web"]
-    }
-},
+                "player_client": ["android", "web"]
+            }
+        },
     }
 
     if cookiefile := get_cookie_file():
@@ -132,12 +131,39 @@ def get_final_path_from_info(info: Dict) -> Optional[str]:
     return None
 
 
+# ==============================
+# YTDLP DOWNLOAD
+# ==============================
+
 def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> Optional[str]:
     try:
         opts = get_ytdlp_base_opts()
         opts["format"] = fmt
 
         with YoutubeDL(opts) as ydl:
+
+            # ==============================
+            # DEBUG FORMAT LIST
+            # ==============================
+            info = ydl.extract_info(link, download=False)
+
+            LOGGER.info("========== YTDLP FORMAT LIST ==========")
+
+            for f in info.get("formats", []):
+                LOGGER.info(
+                    f"id={f.get('format_id')} | "
+                    f"ext={f.get('ext')} | "
+                    f"vcodec={f.get('vcodec')} | "
+                    f"acodec={f.get('acodec')} | "
+                    f"height={f.get('height')} | "
+                    f"abr={f.get('abr')}"
+                )
+
+            LOGGER.info("=======================================")
+
+            # ==============================
+            # DOWNLOAD FILE
+            # ==============================
             info = ydl.extract_info(link, download=True)
 
         path = get_final_path_from_info(info)
@@ -177,6 +203,7 @@ async def download_file(url: str, out_path: str) -> Optional[str]:
         async with session.get(url) as resp:
             if resp.status != 200:
                 return None
+
             async with aiofiles.open(out_path, "wb") as f:
                 async for chunk in resp.content.iter_chunked(CHUNK_SIZE):
                     if chunk:
@@ -234,7 +261,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     download_with_ytdlp_sync,
                     link,
                     "bestaudio/best",
-                    True,  # audio mode
+                    True,
                 )
             )
             if result and title:
@@ -252,7 +279,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     download_with_ytdlp_sync,
                     link,
                     "bestvideo[height<=480]+bestaudio/best[height<=480]/best",
-                    False,  # video mode
+                    False,
                 )
             )
             if result and title:
