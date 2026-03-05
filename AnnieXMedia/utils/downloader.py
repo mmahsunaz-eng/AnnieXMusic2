@@ -134,36 +134,39 @@ def get_final_path_from_info(info: Dict) -> Optional[str]:
 # ==============================
 # YTDLP DOWNLOAD
 # ==============================
-
 def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> Optional[str]:
     try:
-        opts = get_ytdlp_base_opts()
-        opts["format"] = fmt
+        base_opts = get_ytdlp_base_opts()
 
-        with YoutubeDL(opts) as ydl:
+        # ==============================
+        # STEP 1 : DEBUG FORMAT LIST
+        # ==============================
+        debug_opts = base_opts.copy()
 
-            # ==============================
-            # DEBUG FORMAT LIST
-            # ==============================
+        with YoutubeDL(debug_opts) as ydl:
             info = ydl.extract_info(link, download=False)
 
-            LOGGER.info("========== YTDLP FORMAT LIST ==========")
+        LOGGER.info("========== YTDLP FORMAT LIST ==========")
 
-            for f in info.get("formats", []):
-                LOGGER.info(
-                    f"id={f.get('format_id')} | "
-                    f"ext={f.get('ext')} | "
-                    f"vcodec={f.get('vcodec')} | "
-                    f"acodec={f.get('acodec')} | "
-                    f"height={f.get('height')} | "
-                    f"abr={f.get('abr')}"
-                )
+        for f in info.get("formats", []):
+            LOGGER.info(
+                f"id={f.get('format_id')} | "
+                f"ext={f.get('ext')} | "
+                f"vcodec={f.get('vcodec')} | "
+                f"acodec={f.get('acodec')} | "
+                f"height={f.get('height')} | "
+                f"abr={f.get('abr')}"
+            )
 
-            LOGGER.info("=======================================")
+        LOGGER.info("=======================================")
 
-            # ==============================
-            # DOWNLOAD FILE
-            # ==============================
+        # ==============================
+        # STEP 2 : DOWNLOAD FILE
+        # ==============================
+        download_opts = base_opts.copy()
+        download_opts["format"] = fmt
+
+        with YoutubeDL(download_opts) as ydl:
             info = ydl.extract_info(link, download=True)
 
         path = get_final_path_from_info(info)
