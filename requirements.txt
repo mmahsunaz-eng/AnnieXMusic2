@@ -41,5 +41,5 @@ telegraph
 pytgcrypto
 unidecode
 wget
-yt-dlp[default]==2026.03.03
+yt-dlp[default]
 git+https://github.com/CertifiedCoders/youtube-search-python
