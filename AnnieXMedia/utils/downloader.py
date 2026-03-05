@@ -98,8 +98,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "retries": 2,
         "fragment_retries": 2,
         "cachedir": "/tmp",
-        "ignoreerrors": False,
-        "merge_output_format": "mp4",
+        "ignoreerrors": False, 
         "ffmpeg_location": "/app/.apt/usr/bin",
         "extractor_args": {
             "youtube": {
