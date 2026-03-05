@@ -136,37 +136,39 @@ def get_final_path_from_info(info: Dict) -> Optional[str]:
 # ==============================
 def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> Optional[str]:
     try:
-        base_opts = get_ytdlp_base_opts()
 
         # ==============================
-        # STEP 1 : DEBUG FORMAT LIST
+        # STEP 1 : LIST AVAILABLE FORMATS
         # ==============================
-        debug_opts = base_opts.copy()
+        try:
+            list_opts = get_ytdlp_base_opts().copy()
+            list_opts["listformats"] = True
 
-        with YoutubeDL(debug_opts) as ydl:
-            info = ydl.extract_info(link, download=False)
+            LOGGER.info("=========== YTDLP FORMAT LIST ===========")
 
-        LOGGER.info("========== YTDLP FORMAT LIST ==========")
+            with YoutubeDL(list_opts) as ydl:
+                ydl.extract_info(link, download=False)
 
-        for f in info.get("formats", []):
-            LOGGER.info(
-                f"id={f.get('format_id')} | "
-                f"ext={f.get('ext')} | "
-                f"vcodec={f.get('vcodec')} | "
-                f"acodec={f.get('acodec')} | "
-                f"height={f.get('height')} | "
-                f"abr={f.get('abr')}"
-            )
+            LOGGER.info("=========================================")
 
-        LOGGER.info("=======================================")
+        except Exception as e:
+            LOGGER.error(f"Format list failed: {e}")
 
         # ==============================
-        # STEP 2 : DOWNLOAD FILE
+        # STEP 2 : DOWNLOAD
         # ==============================
-        download_opts = base_opts.copy()
-        download_opts["format"] = fmt
+        opts = get_ytdlp_base_opts()
+        opts["format"] = fmt
 
-        with YoutubeDL(download_opts) as ydl:
+        # hanya untuk /play
+        if audio_only:
+            opts["postprocessors"] = [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            }]
+
+        with YoutubeDL(opts) as ydl:
             info = ydl.extract_info(link, download=True)
 
         path = get_final_path_from_info(info)
@@ -179,7 +181,6 @@ def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> O
     except Exception as e:
         LOGGER.error(f"yt-dlp failed: {e}")
         return None
-
 
 # ==============================
 # HTTP SESSION
