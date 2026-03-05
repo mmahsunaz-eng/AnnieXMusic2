@@ -100,6 +100,12 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "ignoreerrors": False,
         "merge_output_format": "mp4",
         "ffmpeg_location": "/app/.apt/usr/bin",
+        "extractor_args": {
+            "youtube": {
+               "player_client": 
+        ["android", "web"]
+    }
+},
     }
 
     if cookiefile := get_cookie_file():
@@ -235,7 +241,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "bestaudio[acodec^=mp4a]",
+                    "bestaudio[ext=m4a]/bestaudio/best",
                     True,  # audio mode
                 )
             )
