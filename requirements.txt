@@ -42,4 +42,5 @@ pytgcrypto
 unidecode
 wget
 yt-dlp>=2026.03.03
+yt-dlp-ejs>=0.4.0
 git+https://github.com/CertifiedCoders/youtube-search-python
