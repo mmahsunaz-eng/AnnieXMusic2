@@ -95,8 +95,8 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "noprogress": True,
         "concurrent_fragment_downloads": 8,
         "socket_timeout": 30,
-        "retries": 2,
-        "fragment_retries": 2,
+        "retries": 5,
+        "fragment_retries": 5,
         "cachedir": "/tmp",
         "ignoreerrors": False,
         "ffmpeg_location": "/app/.apt/usr/bin",
@@ -107,9 +107,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
 
         "extractor_args": {
             "youtube": {
-                "player_client": ["android"],
-                "player_skip": ["webpage", "configs"],
-            }
+                "player_client": ["android","web"],
         },
     }
 
