@@ -137,8 +137,7 @@ def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> O
         # ==============================
         try:
             list_opts = get_ytdlp_base_opts().copy()
-            list_opts["listformats"] = True
-
+            list_opts["skip_download"] = True
             LOGGER.info("=========== YTDLP FORMAT LIST ===========")
 
             with YoutubeDL(list_opts) as ydl:
