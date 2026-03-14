@@ -1,4 +1,7 @@
 ﻿# Authored By Certified Coders © 2025
+import os
+os.system("pip install -U yt-dlp")
+
 import sys
 from pyrogram import Client, errors
 from pyrogram.enums import ChatMemberStatus
