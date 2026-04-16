@@ -102,11 +102,6 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "cachedir": "/tmp",
         "ignoreerrors": False,
         "ffmpeg_location": "/app/.apt/usr/bin",
-                "extractor_args": {
-           "youtube": {
-               "player_client": ["ios", "tv"]
-             }
-           }
         }
     
     if cookiefile := get_cookie_file():
@@ -159,7 +154,7 @@ def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> O
         # STEP 2 : DOWNLOAD
         # ==============================
         opts = get_ytdlp_base_opts()
-        opts["format"] = fmt
+        opts["format"] = "bestvideo+bestaudio/best"
 
         # hanya untuk /play
         if audio_only:
