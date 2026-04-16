@@ -88,6 +88,8 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "outtmpl": "/tmp/%(id)s.%(ext)s",
         "quiet": True,
         "no_warnings": True,
+        "source_address": "0.0.0.0",
+        "force_ipv4": True,
         "noplaylist": True,
         "verbose": True,
         "overwrites": False,
@@ -103,6 +105,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
                 "extractor_args": {
            "youtube": {
                "player_client": ["ios", "tv"]
+             }
            }
         }
     }
@@ -263,7 +266,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "ba/b",
+                    "bestaudio/best",
                     True,
                 )
             )
