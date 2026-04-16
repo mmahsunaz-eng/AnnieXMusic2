@@ -100,7 +100,13 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "cachedir": "/tmp",
         "ignoreerrors": False,
         "ffmpeg_location": "/app/.apt/usr/bin",
-    }
+        ["extractor_args"] = {
+           "youtube": {
+               "player_client": 
+        ["android", "web"]
+                    }
+                }
+            }
     
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
