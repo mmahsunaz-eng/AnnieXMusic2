@@ -102,6 +102,11 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "cachedir": "/tmp",
         "ignoreerrors": False,
         "ffmpeg_location": "/app/.apt/usr/bin",
+        "extractor_args": {
+           "youtube": {
+               "player_client": ["android", "web"]
+             }
+           }
         }
     
     if cookiefile := get_cookie_file():
@@ -133,28 +138,8 @@ def get_final_path_from_info(info: Dict) -> Optional[str]:
 # ==============================
 def download_with_ytdlp_sync(link: str, fmt: str, audio_only: bool = False) -> Optional[str]:
     try:
-
-        # ==============================
-        # STEP 1 : LIST AVAILABLE FORMATS
-        # ==============================
-        try:
-            list_opts = get_ytdlp_base_opts().copy()
-            list_opts["skip_download"] = True
-            LOGGER.info("=========== YTDLP FORMAT LIST ===========")
-
-            with YoutubeDL(list_opts) as ydl:
-                ydl.extract_info(link, download=False)
-
-            LOGGER.info("=========================================")
-
-        except Exception as e:
-            LOGGER.error(f"Format list failed: {e}")
-
-        # ==============================
-        # STEP 2 : DOWNLOAD
-        # ==============================
         opts = get_ytdlp_base_opts()
-        opts["format"] = "bestvideo+bestaudio/best"
+        opts["format"] = fmt
 
         # hanya untuk /play
         if audio_only:
@@ -260,7 +245,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "bestaudio/best",
+                    "bestaudio[ext=m4a]/bestaudio/best",
                     True,
                 )
             )
@@ -278,7 +263,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "bestvideo[height<=480]+bestaudio/best[height<=480]/best",
+                    "bestvideo[ext=mp4][height<=480]+bestaudio[ext=m4a]/best[ext=mp4][height<=480]/best",
                     False,
                 )
             )
