@@ -100,13 +100,11 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "cachedir": "/tmp",
         "ignoreerrors": False,
         "ffmpeg_location": "/app/.apt/usr/bin",
-        "extractor_args": {
+                "extractor_args": {
            "youtube": {
-               "player_client": 
-        ["android"], 
-                    }
-                }
-            }
+               "player_client": ["web", "default"]
+           }
+        }
     
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
@@ -264,7 +262,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                     "best[acodec!=none]/best",
+                    "bestaudio/best",
                     True,
                 )
             )
@@ -282,7 +280,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "best[height<=480][acodec!=none]/best",
+                    "bestvideo[height<=480]+bestaudio/best[height<=480]/best",
                     False,
                 )
             )
