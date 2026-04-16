@@ -104,7 +104,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "ffmpeg_location": "/app/.apt/usr/bin",
         "extractor_args": {
            "youtube": {
-               "player_client": ["android", "web"]
+               "player_client": ["web_creator", "mweb", "tv_embedded"]
              }
            }
         }
