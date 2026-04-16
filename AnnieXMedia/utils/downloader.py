@@ -108,7 +108,6 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
              }
            }
         }
-    }
     
     if cookiefile := get_cookie_file():
         opts["cookiefile"] = cookiefile
