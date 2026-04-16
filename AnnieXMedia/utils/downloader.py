@@ -103,9 +103,7 @@ def get_ytdlp_base_opts() -> Dict[str, object]:
         "extractor_args": {
            "youtube": {
                "player_client": 
-        ["android","tv"], 
-               "formats": ["missing_pot"],
-               "player_skip": ["webpage", "configs"]
+        ["android"], 
                     }
                 }
             }
