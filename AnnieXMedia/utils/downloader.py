@@ -266,7 +266,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                     "bestaudio/best",
+                     "best[acodec!=none]/best",
                     True,
                 )
             )
@@ -284,7 +284,7 @@ async def yt_dlp_download(link: str, type: str, title: str = "") -> Optional[str
                     None,
                     download_with_ytdlp_sync,
                     link,
-                    "best[height<=480]/best",
+                    "best[height<=480][acodec!=none]/best",
                     False,
                 )
             )
